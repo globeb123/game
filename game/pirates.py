@@ -1,4 +1,5 @@
-import pygame 
+import pygame
+from random import randint
  
 score1 = 0
 score2 = 0
@@ -27,15 +28,44 @@ height = 50
 
 margin = 10
 
-block = pygame.image.load("game/images/grass.png")
-block1 = pygame.transform.scale(block, (width, height))
+# block = pygame.image.load("game/images/grass.png")
+# block = pygame.transform.scale(block, (width, height))
 
-ship = pygame.image.load("game/images/ship.png")
-ship1 = pygame.transform.scale(ship, (width, height))
+class Ship(pygame.sprite.Sprite):
+    def __init__(self, img, x, y) -> None:
+        super().__init__()
+        self.image_open = pygame.image.load(img)
+        self.image_open = pygame.transform.scale(self.image_open, (width, height))
+        self.image_closed = pygame.image.load("game/images/grass.png")
+        self.image_closed = pygame.transform.scale(self.image_closed, (width, height))
+        self.image = self.image_closed
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.isOpen = False
+    
+    def open(self):
+        self.isOpen = True
+        self.image = self.image_open
+
+    def show(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+
+ship_enemy = pygame.image.load("game/images/ship2.png")
+ship_enemy = pygame.transform.scale(ship_enemy, (width, height))
 
 font = pygame.font.Font(None, 36)
 
-mas = [[0]*10 for i in range(10)]
+mas: list[list[Ship]] = []
+for row in range(10):
+    temp = []
+    for col in range(10):
+        x = col * width + (col + 1)*margin
+        y = row * height + (row + 1)*margin
+        temp.append(Ship("game/images/ship.png", x, y))
+    mas.append(temp)
+mas[randint(0, 9)][randint(0, 9)].image_open = ship_enemy
 
 while not exit:
     for event in pygame.event.get():  
@@ -46,19 +76,12 @@ while not exit:
             print (f'x = {x_mouse} y = {y_mouse}')
             column = x_mouse//(margin + width)
             row = y_mouse//(margin+height)
-            mas [row] [column] = 1
+            mas [row] [column].open()
 
     window.blit(bg, (0, 0))
-    for row in range (10):
-        for col in range(10):
-            if mas [row][col] == 1:
-                block = ship1
-            else:
-                block = block1
-            x = col * width + (col + 1)*margin
-            y = row * height + (row + 1)*margin
-        
-            window.blit(block, (x, y))
+    for row in mas:
+        for ship in row:
+            ship.show()
     window.blit(font.render('Score ' + score11 + " : " + score12, True, (0, 0, 0)), (700, 100))
     clock.tick(60)
     pygame.display.update()
